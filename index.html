@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patchbay: an MCP playground you can patch</title>
+<meta name="description" content="Plug MCP servers into an AI agent with patch cables. Inspect tools, call them by hand, chain them, and watch an agent use them live.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Martian+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--alu:#D9DAD1;--alu2:#C7C9BE;--silk:#1D1D1B;--walnut:#5A3A24;--walnut2:#3E2717;--rail:#A7A99F;--amber:#FFB238;--screen:#1B150C;--c1:#FF5B1F;--c2:#17B3A3;--c3:#F3C531;--c4:#E8418A;--c5:#3C6CF0;--c6:#8BC34A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Barlow Condensed",sans-serif;color:var(--silk);background:var(--walnut2);font-size:19px;line-height:1.45;overflow-x:hidden}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--c5);outline-offset:3px}
+.wood{background:
+  repeating-linear-gradient(92deg,rgba(255,255,255,.035) 0 2px,transparent 2px 9px),
+  repeating-linear-gradient(88deg,rgba(0,0,0,.12) 0 1px,transparent 1px 23px),
+  linear-gradient(180deg,var(--walnut),var(--walnut2))}
+.case{min-height:100svh;padding:28px clamp(10px,3vw,40px) 40px;position:relative}
+.top{display:flex;justify-content:space-between;align-items:center;color:#E9D7C3;padding:0 6px 18px;font-weight:600;letter-spacing:.06em}
+.top a{text-decoration:none}
+.brand{font-weight:800;font-size:22px;letter-spacing:.18em;display:flex;align-items:center;gap:10px}
+.brand i{width:12px;height:12px;border-radius:50%;background:var(--c1);box-shadow:0 0 10px var(--c1)}
+.rail{height:22px;background:linear-gradient(180deg,#c4c6bc,#8e9088 60%,#b5b7ad);border-radius:2px;position:relative;box-shadow:0 2px 3px rgba(0,0,0,.4)}
+.rail::after{content:"";position:absolute;inset:7px 0;background:radial-gradient(circle at 50% 50%,#55574f 0 2.6px,transparent 3px) 0 0/34px 8px repeat-x;opacity:.8}
+.row{display:grid;grid-template-columns:minmax(0,2.25fr) minmax(0,1fr) minmax(0,1.35fr);gap:3px;position:relative}
+.mod{background:linear-gradient(180deg,#e3e4dc,var(--alu) 40%,var(--alu2));position:relative;padding:34px clamp(18px,2.4vw,34px) 34px;box-shadow:inset 0 1px 0 #fff,inset 0 -2px 0 rgba(0,0,0,.12),0 6px 14px rgba(0,0,0,.35);min-height:620px;display:flex;flex-direction:column}
+.mod::before,.mod::after{content:"";position:absolute;left:16px;width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fafafa,#8d8f87 70%);box-shadow:0 1px 1px rgba(0,0,0,.4)}
+.mod::before{top:8px}.mod::after{bottom:8px}
+.screw-r{position:absolute;right:16px;top:8px;width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fafafa,#8d8f87 70%)}
+.silk{font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:13px}
+.model{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--silk);padding-bottom:8px}
+h1{font-weight:800;font-size:clamp(54px,7.6vw,118px);line-height:.86;letter-spacing:-.01em;margin-top:auto;padding-top:40px}
+h1 span{display:block}
+.intro{margin-top:22px;font-size:clamp(19px,1.6vw,23px);max-width:34ch;font-weight:500}
+.buttons{display:flex;gap:18px;margin-top:30px;flex-wrap:wrap;align-items:flex-end}
+.push{display:flex;flex-direction:column;align-items:center;gap:8px;text-decoration:none}
+.push b{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ff8a5c,var(--c1) 55%,#b33a0d);box-shadow:0 5px 0 #7a2706,0 8px 14px rgba(0,0,0,.35),inset 0 2px 2px rgba(255,255,255,.5);transition:transform .08s,box-shadow .08s;display:block}
+.push.alt b{background:radial-gradient(circle at 40% 35%,#5a5a55,#2a2a27 60%,#111);box-shadow:0 5px 0 #000,0 8px 14px rgba(0,0,0,.35),inset 0 2px 2px rgba(255,255,255,.25)}
+.push:hover b{transform:translateY(2px);box-shadow:0 3px 0 #7a2706,0 5px 10px rgba(0,0,0,.35),inset 0 2px 2px rgba(255,255,255,.5)}
+.push.alt:hover b{box-shadow:0 3px 0 #000,0 5px 10px rgba(0,0,0,.35)}
+.push span{font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:14px}
+.jacks{display:grid;grid-template-columns:repeat(2,1fr);gap:26px 10px;margin-top:34px}
+.jk{display:flex;flex-direction:column;align-items:center;gap:8px}
+.jack{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle,#0b0b0a 0 30%,#3d3d39 32% 44%,#d0d1c8 46% 62%,#8e9087 64% 100%);box-shadow:0 2px 3px rgba(0,0,0,.35);cursor:grab;position:relative;touch-action:none}
+.jack[data-color]::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:3px solid var(--ring)}
+.jk .silk{font-size:12px}
+.led{width:10px;height:10px;border-radius:50%;background:#4a1810;display:inline-block;vertical-align:middle;margin-right:6px}
+.led.on{background:#ff3a1a;box-shadow:0 0 8px 2px rgba(255,58,26,.7)}
+.knobs{display:flex;gap:26px;justify-content:center;margin-top:26px}
+.knob{display:flex;flex-direction:column;align-items:center;gap:8px}
+.knob b{width:70px;height:70px;border-radius:50%;background:radial-gradient(circle at 45% 35%,#5d5d58,#1f1f1d 65%);box-shadow:0 0 0 5px #cfd0c7,0 0 0 6px #9c9e95,0 6px 10px rgba(0,0,0,.4);position:relative;display:block;transform:rotate(var(--r,0deg));cursor:ns-resize}
+.knob b::after{content:"";position:absolute;left:50%;top:6px;width:3px;height:20px;background:#f2f2ea;transform:translateX(-50%);border-radius:2px}
+.screen{background:var(--screen);border-radius:4px;padding:14px;margin-top:24px;font-family:"Martian Mono",monospace;font-size:11.5px;line-height:1.7;color:var(--amber);min-height:186px;box-shadow:inset 0 0 0 3px #0b0905,inset 0 0 26px rgba(255,178,56,.12);text-shadow:0 0 6px rgba(255,178,56,.55);overflow:hidden;white-space:pre-wrap;word-break:break-word}
+.agent-jacks{display:grid;grid-template-columns:repeat(3,1fr);gap:22px 6px;margin-top:22px}
+svg.cables{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:5}
+svg.cables path{fill:none;stroke-linecap:round}
+svg.cables circle{pointer-events:all;cursor:grab}
+.hint{color:#E9D7C3;margin-top:16px;font-size:15px;letter-spacing:.04em;text-align:center;opacity:.8}
+
+/* sections */
+.panel-sec{background:linear-gradient(180deg,#e3e4dc,var(--alu));padding:clamp(70px,9vw,130px) clamp(18px,5vw,64px);position:relative}
+.wrap{max-width:1180px;margin:0 auto}
+h2{font-weight:800;font-size:clamp(48px,6vw,88px);line-height:.9}
+.lede{font-size:21px;max-width:50ch;margin-top:16px;font-weight:500}
+.fp{display:grid;grid-template-columns:repeat(4,1fr);margin-top:56px;border:2px solid var(--silk)}
+.fp > div{padding:26px 22px 30px;border-right:2px solid var(--silk);display:flex;flex-direction:column;gap:14px}
+.fp > div:last-child{border-right:0}
+.fp h3{font-weight:800;font-size:40px;line-height:.9}
+.fp .knob b{width:52px;height:52px}
+.fp p{font-weight:500}
+.fp .silk{color:#55574f}
+@media (max-width:900px){.fp{grid-template-columns:1fr 1fr}.fp > div:nth-child(2){border-right:0}.fp > div:nth-child(-n+2){border-bottom:2px solid var(--silk)}}
+.matrix{margin-top:52px;width:100%;border-collapse:collapse;font-size:19px}
+.matrix th,.matrix td{padding:14px 12px;border-bottom:2px solid var(--silk);text-align:left;vertical-align:top}
+.matrix th{font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:13px}
+.matrix td:first-child{font-weight:800;font-size:28px;white-space:nowrap}
+.matrix td:first-child i{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:10px;vertical-align:2px}
+.matrix code{font-family:"Martian Mono",monospace;font-size:12.5px;background:rgba(0,0,0,.07);padding:2px 6px;margin:2px 4px 2px 0;display:inline-block}
+.dark{background:var(--screen);color:var(--amber)}
+.dark h2{color:var(--amber);text-shadow:0 0 18px rgba(255,178,56,.35)}
+.dark pre{font-family:"Martian Mono",monospace;font-size:13px;line-height:1.75;margin-top:36px;padding:24px;border:1px solid rgba(255,178,56,.35);overflow:auto;text-shadow:0 0 6px rgba(255,178,56,.45)}
+.dark .lede{color:#f3d9ae}
+.end{text-align:center}
+.end .buttons{justify-content:center}
+footer{padding:26px clamp(18px,5vw,64px);color:#E9D7C3;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-weight:600;letter-spacing:.06em}
+@media (max-width:980px){.row{grid-template-columns:1fr}.mod{min-height:0}h1{padding-top:24px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body class="wood">
+<header class="case">
+  <div class="top"><a class="brand" href="./"><i></i>PATCHBAY</a><a href="app.html">Open the playground</a></div>
+  <div class="rail"></div>
+  <div class="row" id="rack">
+    <div class="mod">
+      <span class="screw-r"></span>
+      <div class="model"><span class="silk">MCP-1 tool router</span><span class="silk"><span class="led on"></span>Power</span></div>
+      <h1><span>Patch any</span><span>MCP server</span><span>into any agent.</span></h1>
+      <p class="intro">Inspect tools, fire them by hand, chain them together, then hand the cables to Claude and watch it work.</p>
+      <div class="buttons">
+        <a class="push" href="app.html"><b></b><span>Start patching</span></a>
+        <a class="push alt" href="app.html#agent"><b></b><span>Agent mode</span></a>
+      </div>
+    </div>
+    <div class="mod">
+      <span class="screw-r"></span>
+      <div class="model"><span class="silk">Servers</span><span class="silk">Out</span></div>
+      <div class="jacks" id="srcJacks">
+        <div class="jk"><div class="jack" data-id="notes" data-color="#FF5B1F" style="--ring:#FF5B1F" tabindex="0" aria-label="Notes server output"></div><span class="silk">Notes</span></div>
+        <div class="jk"><div class="jack" data-id="web" data-color="#17B3A3" style="--ring:#17B3A3" tabindex="0" aria-label="Web server output"></div><span class="silk">Web</span></div>
+        <div class="jk"><div class="jack" data-id="math" data-color="#F3C531" style="--ring:#F3C531" tabindex="0" aria-label="Math server output"></div><span class="silk">Math</span></div>
+        <div class="jk"><div class="jack" data-id="clock" data-color="#E8418A" style="--ring:#E8418A" tabindex="0" aria-label="Clock server output"></div><span class="silk">Clock</span></div>
+        <div class="jk"><div class="jack" data-id="sketch" data-color="#3C6CF0" style="--ring:#3C6CF0" tabindex="0" aria-label="Sketch server output"></div><span class="silk">Sketch</span></div>
+        <div class="jk"><div class="jack" data-id="dice" data-color="#8BC34A" style="--ring:#8BC34A" tabindex="0" aria-label="Dice server output"></div><span class="silk">Dice</span></div>
+      </div>
+      <div class="knobs"><div class="knob"><b style="--r:-40deg"></b><span class="silk">Timeout</span></div></div>
+    </div>
+    <div class="mod">
+      <span class="screw-r"></span>
+      <div class="model"><span class="silk">Agent</span><span class="silk"><span class="led" id="actLed"></span>Active</span></div>
+      <div class="agent-jacks" id="dstJacks">
+        <div class="jk"><div class="jack in" data-slot="1"></div><span class="silk">In 1</span></div>
+        <div class="jk"><div class="jack in" data-slot="2"></div><span class="silk">In 2</span></div>
+        <div class="jk"><div class="jack in" data-slot="3"></div><span class="silk">In 3</span></div>
+      </div>
+      <div class="screen" id="oled" aria-live="polite"></div>
+      <div class="knobs"><div class="knob"><b style="--r:30deg" id="k1"></b><span class="silk">Temp</span></div><div class="knob"><b style="--r:-70deg" id="k2"></b><span class="silk">Max turns</span></div></div>
+    </div>
+    <svg class="cables" id="cables" aria-hidden="true"></svg>
+  </div>
+  <div class="rail"></div>
+  <p class="hint">Drag a cable from a server into one of the agent's inputs.</p>
+</header>
+
+<section class="panel-sec">
+  <div class="wrap">
+    <h2>Four ways to use a server</h2>
+    <p class="lede">Most MCP debugging is guessing. Patchbay puts every tool, argument and raw message in front of you.</p>
+    <div class="fp">
+      <div><div class="knob"><b style="--r:-60deg"></b></div><h3>Inspect</h3><p>Connect a server and see every tool, resource and prompt with its full schema.</p></div>
+      <div><div class="knob"><b style="--r:-20deg"></b></div><h3>Call</h3><p>Forms are built from each tool's JSON schema. Fill one in, fire it, read the exact response.</p></div>
+      <div><div class="knob"><b style="--r:20deg"></b></div><h3>Chain</h3><p>Pipe one tool's output into the next. Save the chain and replay it whenever the server changes.</p></div>
+      <div><div class="knob"><b style="--r:60deg"></b></div><h3>Agent</h3><p>Give Claude every patched tool and a goal. Each call lights up the cable it travels on.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel-sec" style="background:linear-gradient(180deg,var(--alu),#cfd0c6)">
+  <div class="wrap">
+    <h2>Six servers in the box</h2>
+    <p class="lede">They run inside the page, so you can play before you've connected anything. Then add your own remote servers by URL.</p>
+    <table class="matrix">
+      <thead><tr><th>Server</th><th>Tools</th><th>Good for</th></tr></thead>
+      <tbody>
+        <tr><td><i style="background:var(--c1)"></i>Notes</td><td><code>create_note</code><code>list_notes</code><code>read_note</code><code>search_notes</code><code>delete_note</code></td><td>Memory an agent can read and write</td></tr>
+        <tr><td><i style="background:var(--c2)"></i>Web</td><td><code>fetch_page</code><code>fetch_json</code></td><td>Reading real pages and APIs</td></tr>
+        <tr><td><i style="background:var(--c3)"></i>Math</td><td><code>calculate</code><code>statistics</code><code>convert_units</code></td><td>Numbers models shouldn't guess</td></tr>
+        <tr><td><i style="background:var(--c4)"></i>Clock</td><td><code>now</code><code>days_between</code><code>add_time</code></td><td>Dates, time zones, deadlines</td></tr>
+        <tr><td><i style="background:var(--c5)"></i>Sketch</td><td><code>draw_shape</code><code>draw_text</code><code>clear_canvas</code></td><td>Watching an agent draw</td></tr>
+        <tr><td><i style="background:var(--c6)"></i>Dice</td><td><code>roll</code><code>pick</code><code>shuffle</code><code>uuid</code></td><td>Randomness and games</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel-sec dark">
+  <div class="wrap">
+    <h2>See every message on the wire</h2>
+    <p class="lede">The traffic monitor logs each JSON-RPC request and response, so you know whether the bug is in the server or the model.</p>
+<pre>→ tools/call  notes.create_note  {"title":"Launch plan","body":"Ship Friday"}
+← result      {"content":[{"type":"text","text":"Saved note n_7f2a"}]}     4 ms
+→ tools/call  clock.days_between {"from":"today","to":"2026-12-25"}
+← result      {"content":[{"type":"text","text":"41 days"}]}               1 ms
+→ tools/call  web.fetch_page     {"url":"https://modelcontextprotocol.io"}
+← result      {"content":[{"type":"text","text":"Model Context Protocol..."}]} 312 ms</pre>
+  </div>
+</section>
+
+<section class="panel-sec end">
+  <div class="wrap">
+    <h2>Plug in</h2>
+    <p class="lede" style="margin-inline:auto">Nothing to install. Bring a server URL or start with the six in the box.</p>
+    <div class="buttons"><a class="push" href="app.html"><b></b><span>Open the playground</span></a></div>
+  </div>
+</section>
+<footer><span>Patchbay</span><span>Speaks MCP over Streamable HTTP</span></footer>
+
+<script>
+const rack=document.getElementById('rack'),svg=document.getElementById('cables'),oled=document.getElementById('oled'),led=document.getElementById('actLed');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const srcs=[...document.querySelectorAll('#srcJacks .jack')],dsts=[...document.querySelectorAll('#dstJacks .jack')];
+const LOG={notes:['tools/list → 5 tools','call notes.create_note','  {"title":"Ideas"}','← Saved note n_41c'],web:['tools/list → 2 tools','call web.fetch_page','  {"url":"https://news.ycombinator.com"}','← 30 stories, 41 KB'],math:['tools/list → 3 tools','call math.calculate','  {"expression":"(1.07^10)*2500"}','← 4917.88'],clock:['tools/list → 3 tools','call clock.days_between','  {"to":"2026-12-25"}','← 41 days'],sketch:['tools/list → 3 tools','call sketch.draw_shape','  {"shape":"circle","r":40}','← drawn'],dice:['tools/list → 4 tools','call dice.roll','  {"notation":"3d6+2"}','← 14 (5, 4, 3)']};
+let cables=[{from:'notes',to:'1'},{from:'web',to:'2'},{from:'math',to:'3'}];
+let drag=null,swing=0;
+const center=(el)=>{const a=el.getBoundingClientRect(),b=rack.getBoundingClientRect();return[a.left-b.left+a.width/2,a.top-b.top+a.height/2]};
+function pathD(x1,y1,x2,y2,t){const dx=Math.abs(x2-x1),sag=Math.min(260,60+dx*.35+Math.abs(y2-y1)*.15)*(1+Math.sin(t)*.08*Math.exp(-swing));return`M${x1},${y1} C${x1+(x2-x1)*.2},${Math.max(y1,y2)+sag} ${x2-(x2-x1)*.2},${Math.max(y1,y2)+sag} ${x2},${y2}`}
+function draw(t=0){
+  let h='';const all=[...cables.map(c=>({...c,a:center(srcs.find(j=>j.dataset.id===c.from)),b:center(dsts.find(j=>j.dataset.slot===c.to))}))];
+  if(drag)all.push({from:drag.from,a:center(srcs.find(j=>j.dataset.id===drag.from)),b:[drag.x,drag.y],live:1});
+  for(const c of all){const col=srcs.find(j=>j.dataset.id===c.from).dataset.color;const d=pathD(...c.a,...c.b,t);
+    h+=`<path d="${d}" stroke="rgba(0,0,0,.28)" stroke-width="11" transform="translate(3,6)"/><path d="${d}" stroke="${col}" stroke-width="9"/><path d="${d}" stroke="rgba(255,255,255,.35)" stroke-width="2.5" transform="translate(-1.5,-1.5)"/>`;
+    for(const p of[c.a,c.b])h+=`<circle cx="${p[0]}" cy="${p[1]}" r="11" fill="#2b2b28" stroke="${col}" stroke-width="4"/>`}
+  svg.innerHTML=h}
+let t0=performance.now();
+function loop(now){swing=(now-t0)/600;draw(reduce?0:(now-t0)/170);if(swing<8||drag)requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+addEventListener('resize',()=>draw());
+let typing=null;
+function type(lines){clearInterval(typing);let s='',i=0;const full=lines.join('\n');led.classList.add('on');typing=setInterval(()=>{s=full.slice(0,++i);oled.textContent=s+(i%2?'▌':'');if(i>=full.length){clearInterval(typing);oled.textContent=full;setTimeout(()=>led.classList.remove('on'),600)}},reduce?0:18)}
+function status(){const names=cables.map(c=>c.from);oled.textContent=`agent ready\npatched: ${names.join(', ')||'nothing'}\ntools available: ${names.reduce((n,k)=>n+(+LOG[k][0].match(/\d+/)[0]),0)}`}
+status();
+function start(e,id){e.preventDefault();cables=cables.filter(c=>c.from!==id);const[x,y]=center(srcs.find(j=>j.dataset.id===id));drag={from:id,x,y};t0=performance.now();requestAnimationFrame(loop)}
+srcs.forEach(j=>{j.addEventListener('pointerdown',e=>start(e,j.dataset.id));
+  j.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();const id=j.dataset.id;const free=dsts.find(d=>!cables.some(c=>c.to===d.dataset.slot))||dsts[0];cables=cables.filter(c=>c.from!==id&&c.to!==free.dataset.slot);cables.push({from:id,to:free.dataset.slot});t0=performance.now();requestAnimationFrame(loop);type(LOG[id])}})});
+addEventListener('pointermove',e=>{if(!drag)return;const b=rack.getBoundingClientRect();drag.x=e.clientX-b.left;drag.y=e.clientY-b.top});
+addEventListener('pointerup',e=>{if(!drag)return;const hit=dsts.find(d=>{const r=d.getBoundingClientRect();return Math.hypot(e.clientX-(r.left+r.width/2),e.clientY-(r.top+r.height/2))<40});
+  if(hit){cables=cables.filter(c=>c.to!==hit.dataset.slot);cables.push({from:drag.from,to:hit.dataset.slot});type(LOG[drag.from])}else status();
+  drag=null;t0=performance.now();requestAnimationFrame(loop)});
+document.querySelectorAll('.knob b').forEach(k=>{let y0=null,r0=0;k.addEventListener('pointerdown',e=>{y0=e.clientY;r0=parseFloat(getComputedStyle(k).getPropertyValue('--r'))||0;k.setPointerCapture(e.pointerId)});k.addEventListener('pointermove',e=>{if(y0==null)return;k.style.setProperty('--r',Math.max(-140,Math.min(140,r0+(y0-e.clientY)*1.6))+'deg')});k.addEventListener('pointerup',()=>y0=null)});
+</script>
+</body>
+</html>

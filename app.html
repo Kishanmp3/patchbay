@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patchbay playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@400;500;600&family=Martian+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="./"><i></i>PATCHBAY</a>
+  <nav class="tabs">
+    <a href="#inspect" data-view="inspect">Inspect</a>
+    <a href="#chain" data-view="chain">Chain</a>
+    <a href="#agent" data-view="agent">Agent</a>
+  </nav>
+  <div class="bar-r"><span class="pill" id="aiPill">Agent offline</span><button class="btn small" id="openSettings">Settings</button><button class="btn small" id="toggleMon" aria-pressed="true">Monitor</button></div>
+</header>
+
+<div class="shell" id="shell">
+  <!-- RACK -->
+  <aside class="rack">
+    <div class="rack-head"><span class="silk">Rack</span><button class="btn small" id="addServer">Add server</button></div>
+    <ul class="servers" id="servers"></ul>
+    <p class="rack-note">Built-in servers run in this page. Remote servers connect over Streamable HTTP.</p>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- INSPECT -->
+    <section class="view" id="view-inspect">
+      <div class="srv-head" id="srvHead"></div>
+      <div class="subtabs" id="subtabs">
+        <button data-sub="tools" aria-pressed="true">Tools</button>
+        <button data-sub="resources">Resources</button>
+        <button data-sub="prompts">Prompts</button>
+      </div>
+      <div class="inspect">
+        <ul class="tool-list" id="itemList"></ul>
+        <div class="tool-pane" id="pane"><div class="empty">Pick a tool on the left.</div></div>
+      </div>
+    </section>
+
+    <!-- CHAIN -->
+    <section class="view" id="view-chain" hidden>
+      <div class="chain-head">
+        <div><h1>Chain</h1><p>Each step can use earlier results: <code>{{step1}}</code> is step 1's text, <code>{{step1.json.total}}</code> reads a field, <code>{{step1.num}}</code> grabs the first number.</p></div>
+        <div class="chain-actions">
+          <select id="chainPick" aria-label="Saved chains"></select>
+          <button class="btn small" id="chainSave">Save</button>
+          <button class="btn small" id="chainNew">New</button>
+          <button class="btn go" id="chainRun">Run chain</button>
+        </div>
+      </div>
+      <div class="steps" id="steps"></div>
+      <button class="btn add-step" id="addStep">Add a step</button>
+    </section>
+
+    <!-- AGENT -->
+    <section class="view agent" id="view-agent" hidden>
+      <div class="convo">
+        <div class="log" id="agentLog">
+          <div class="empty big">
+            <h2>Give the agent a goal</h2>
+            <p>It can use every tool from the servers that are switched on in the rack.</p>
+            <div class="ideas" id="ideas"></div>
+          </div>
+        </div>
+        <form class="ask" id="askForm">
+          <textarea id="goal" rows="2" placeholder="Roll 4d6 for each of six stats, calculate the total, and save it as a note called Character."></textarea>
+          <div class="ask-row">
+            <label>Max turns <input id="maxTurns" type="number" min="1" max="30" value="12"></label>
+            <button type="button" class="btn small" id="agentReset">New conversation</button>
+            <button class="btn go" id="agentGo">Run agent</button>
+          </div>
+        </form>
+      </div>
+      <div class="side">
+        <div class="sketch-wrap"><div class="silk row-sp"><span>Sketch canvas</span><button class="btn tiny" id="sketchClear">Clear</button></div><canvas id="sketch" width="800" height="500"></canvas></div>
+        <div class="patch" id="patchList"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MONITOR -->
+  <aside class="monitor" id="monitor">
+    <div class="mon-head"><span>Traffic</span><span><select id="monFilter" aria-label="Filter traffic"><option value="">All servers</option></select> <button class="btn tiny dark" id="monClear">Clear</button></span></div>
+    <ol class="mon" id="mon"></ol>
+  </aside>
+</div>
+
+<dialog id="dlgServer">
+  <form method="dialog" class="sheet" id="serverForm">
+    <h2>Add a remote server</h2>
+    <label>Name<input id="fsName" required placeholder="deepwiki"></label>
+    <label>Server URL<input id="fsUrl" type="url" required placeholder="https://mcp.deepwiki.com/mcp"></label>
+    <label>Headers, one per line<textarea id="fsHeaders" rows="3" placeholder="Authorization: Bearer ..."></textarea></label>
+    <p class="hint">Try a public one: <button type="button" class="link" data-try="deepwiki|https://mcp.deepwiki.com/mcp">DeepWiki</button></p>
+    <div class="row-end"><button value="cancel" class="btn small" formnovalidate>Cancel</button><button class="btn go" value="ok" id="fsSave">Connect</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgSettings">
+  <form method="dialog" class="sheet">
+    <h2>Settings</h2>
+    <p>The agent uses Claude through this site's server key. If there isn't one, paste your own Anthropic key. It stays in this browser.</p>
+    <label>Anthropic API key<input id="sKey" type="password" autocomplete="off" placeholder="sk-ant-..."></label>
+    <label>Access code (if the owner set one)<input id="sCode" type="password" autocomplete="off"></label>
+    <label>Model<input id="sModel" placeholder="claude-sonnet-5-5"></label>
+    <div class="row-end"><button value="cancel" class="btn small">Close</button><button class="btn go" value="ok" id="sSave">Save</button></div>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status"></div>
+<script type="module" src="assets/app.js"></script>
+</body>
+</html>
