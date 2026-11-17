@@ -1,5 +1,5 @@
 import { bus, LocalServer, RemoteServer, BUILTINS, contentText } from './mcp.js';
-import { claude, aiStatus, settings } from './ai-client.js';
+import { claude, aiStatus, setupKeyUI } from './ai-client.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -217,8 +217,9 @@ const add = (html, cls) => { const d = document.createElement('div'); d.classNam
 $('#agentReset').onclick = () => { convo = []; logEl.innerHTML = ''; add(`<div class="empty big"><h2>Fresh start</h2><p>New conversation. The rack is still patched.</p></div>`, ''); };
 $('#goal').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) $('#askForm').requestSubmit(); });
 $('#askForm').onsubmit = async (e) => {
-  e.preventDefault(); const goal = $('#goal').value.trim() || $('#goal').placeholder; $('#goal').value = '';
-  const st = await aiStatus(); if (!st.ready) { add(`<p><strong>The agent needs a Claude key.</strong> Add <code>ANTHROPIC_API_KEY</code> on the server, or paste your own key in Settings.</p>`, 'msg ai'); $('#dlgSettings').showModal(); return; }
+  e.preventDefault();
+  if (!(await keyUI.require('The agent runs on your own Anthropic API key. Add it here and press Run agent again. Inspect and Chain keep working without one.'))) return;
+  const goal = $('#goal').value.trim() || $('#goal').placeholder; $('#goal').value = '';
   const tools = agentTools(); add(esc(goal), 'msg user'); convo.push({ role: 'user', content: goal });
   const defs = [...tools].map(([name, { s, t }]) => ({ name, description: `[${s.name}] ${t.description || ''}`.slice(0, 1024), input_schema: t.inputSchema?.type ? t.inputSchema : { type: 'object', properties: {} } }));
   const system = `You are an agent in Patchbay, an MCP playground. Use the available tools to accomplish the user's goal. Prefer tools over guessing for math, dates and web content. The sketch canvas is 800x500, origin top-left; build drawings from many shapes and pick pleasing colors. When done, reply with a short summary of what you did.`;
@@ -279,9 +280,8 @@ $('#serverForm').addEventListener('submit', async (e) => {
   state.sel = id; const p = addRemote({ id, name, url, headers, color }); saveRemotes(); renderRack(); renderInspect();
   await p; toast(byId(id).status === 'ready' ? `${name} connected, ${byId(id).tools.length} tools` : `${name} didn't connect. See the rack for details.`); location.hash = 'inspect';
 });
-$('#openSettings').onclick = () => { $('#sKey').value = settings.key; $('#sCode').value = settings.code; $('#sModel').value = settings.model; $('#dlgSettings').showModal(); };
-$('#sSave').onclick = () => { settings.key = $('#sKey').value.trim(); settings.code = $('#sCode').value.trim(); settings.model = $('#sModel').value.trim(); refreshAI(); toast('Settings saved'); };
-async function refreshAI() { const s = await aiStatus(); const p = $('#aiPill'); p.classList.toggle('on', s.ready); p.textContent = s.ready ? 'Agent ready' : 'Agent needs a key'; }
+const keyUI = setupKeyUI({ dialog: '#dlgSettings', button: '#openSettings', toast, onChange: (s) => { const p = $('#aiPill'); p.classList.toggle('on', s.ready); p.textContent = s.ready ? 'Agent ready' : 'Agent needs a key'; } });
+function refreshAI() { return keyUI.refresh(); }
 
 /* ---------- routing ---------- */
 const views = ['inspect', 'chain', 'agent'];

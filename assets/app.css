@@ -179,3 +179,5 @@ dialog::backdrop{background:rgba(62,39,23,.6)}
 @media (max-width:980px){.agent{grid-template-columns:1fr;height:auto}.inspect{grid-template-columns:1fr}.tool-list{max-height:260px}}
 @media (max-width:760px){.shell{grid-template-columns:1fr}.rack{border-right:0;border-bottom:2px solid #9ea095;max-height:240px}.bar{flex-wrap:wrap}.tabs{order:3;width:100%}.main{padding:16px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.kstatus{font-size:13.5px;min-height:1.2em}.kstatus[data-kind=error]{color:#B3261E}.kstatus[data-kind=info]{color:var(--mute)}
+.bar .btn.needs-key{background:var(--c1);color:#fff}

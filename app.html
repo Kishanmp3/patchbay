@@ -104,13 +104,14 @@
 
 <dialog id="dlgSettings">
   <form method="dialog" class="sheet">
-    <h2>Settings</h2>
-    <p>The agent uses Claude through this site's server key. If there isn't one, paste your own Anthropic key. It stays in this browser.</p>
-    <label>Anthropic API key<input id="sKey" type="password" autocomplete="off" placeholder="sk-ant-..."></label>
-    <label>Access code (if the owner set one)<input id="sCode" type="password" autocomplete="off"></label>
-    <label>Model<input id="sModel" placeholder="claude-sonnet-5-5"></label>
-    <div class="row-end"><button value="cancel" class="btn small">Close</button><button class="btn go" value="ok" id="sSave">Save</button></div>
-  </form>
+  <h2>Your API key</h2>
+  <p>Patchbay's agent runs on your own Anthropic API key. It's saved only in this browser and sent straight to Anthropic, never to this site's server. <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">Get a key</a></p>
+  <label>Anthropic API key<input id="sKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-..."></label>
+  <label>Model<input id="sModel" placeholder="claude-sonnet-5-5"></label>
+  <label>Access code<input id="sCode" type="password" autocomplete="off"></label>
+  <p id="sStatus" class="kstatus" role="status" aria-live="polite"></p>
+  <div class="row-end"><button type="button" class="btn small" id="sForget">Remove key</button><button value="cancel" class="btn small">Close</button><button class="btn go" value="ok" id="sSave">Save key</button></div>
+</form>
 </dialog>
 <div class="toast" id="toast" role="status"></div>
 <script type="module" src="assets/app.js"></script>
